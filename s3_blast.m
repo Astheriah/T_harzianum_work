@@ -1,3 +1,7 @@
+%% Para poder hacer BLAST utilizando el .fasta (proteinas) del genoma de interes contra todos los archivos .faa de interes (reducidos a solo los que se encuentran en el modelo)
+%%
+%% RESULTADO: blast_reduced_THM10.mat con los datos de los blast
+
 list2 = {'THM10.fasta'};
 
 
