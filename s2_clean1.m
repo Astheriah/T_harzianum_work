@@ -7,7 +7,7 @@
 % 3) Se genera un archivo  modelo_protein_clean_reduced.faa con solo las proteínas de los genes en CSV (genes dentro dele modelo)
 % 4) Se genera un archivo modelo_protein_clean_1.faa con las proteínas del modelo pero SOLO con las cabeceras de locus_tag
 
-% El funcionamiento genera los archivos si par la generacion del modelo se uso de forma estandar el locus tag como nombre de genes dentro del .mat
+% El funcionamiento genera los archivos si para la generacion del modelo se uso de forma estandar el locus tag como nombre de genes dentro del .mat
 % Los que tuvieron error deben corregirse manualmente, ya que no se puede hacer de forma automatica debido a que tienen nombres distintos al locus_tag
 
 % OBJETIVO: generar _protein_clean_1.faa, _protein_clean_reduced.faa con cabeceras de locus_tag (EL MISMO NOMBRE QUE EXISTE DENTRO DE LOS .MAT)

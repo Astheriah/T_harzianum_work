@@ -1,13 +1,12 @@
 initCobraToolbox()
 
-% Procesar todos los archivos .xml y sbml en el directorio actual para transformar en archivos .mat y poder procesarlos mas rapido
+% Procesar todos los archivos .xml y sbml en el directorio actual para transformar en archivos .mat para poder procesarlos mas rapido
 archivos = [dir('*.xml'); dir('*.sbml')];
 
 for i = 1:length(archivos)
     try
         filename = archivos(i).name;
         
-        % Cargar modelo
         modelo_cargado = readCbModel(filename);
         
         % Obtener nombre del modelo

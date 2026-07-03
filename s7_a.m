@@ -1,8 +1,10 @@
-% Script: procesar_hits_con_modelo_COBRA.m
-% Calcula cobertura de genes y reacciones, indicando cuáles reacciones
-% tienen genes no presentes en el CSV.
+% Para calcular % de presencia de hits para genes y rxns del modelo, es decir si
+% MODELO.mat tiene 1000 genes y existio %Falt de 20 significa que 800 genes
+% SI tuvieron hits para los genes y 200 NO tuvieron hits,
+% MODELO.mat tiene 1000 rxns y existio un %Comp. de 80 significa que 800
+% rxns SI tienen hit (se toman en cuenta los genes que no tienen GPR
+% asociada y las que NO tienen hit)
 
-clear; clc;
 initCobraToolbox()
 
 % ================= CONFIGURACIÓN =================

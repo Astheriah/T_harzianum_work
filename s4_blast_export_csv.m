@@ -1,4 +1,5 @@
-%% Para cargar el archivo .mat de s3_blast.m y exportar cada tabla de hits a un archivo CSV
+%% Para cargar los 2 archivos .mat de s3_blast.m y exportar cada tabla de hits a un archivo CSV
+%% Los resultados de _reduced dentro de una carpeta denominada hits_reduced
 %% RESULTADO: Archivos CSV con nombre Hits_TH10_vs_MODELO_protein_1.csv
 
 load('blast_THM10.mat');
