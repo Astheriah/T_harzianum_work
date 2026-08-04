@@ -78,6 +78,10 @@ lenHits = cellfun(@length, HitsInfo2);
 [M, I] = max(lenHits, [], 1);
 [sortVar, idxSort] = sort(lenHits, 'descend');
 
-save('blast_reduced_THM10.mat');
+carpeta = 'workspaces';
+if ~isfolder(carpeta)
+    mkdir(carpeta);
+end
+save(fullfile(carpeta, 'blast_reduced_THM10.mat'));
 
 disp('Proceso completado');

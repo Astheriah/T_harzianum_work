@@ -1,8 +1,14 @@
 # Ignorar todos los archivos CSV
 *.csv
+
 # Archivos de resultados de BLAST (muy pesados)
 blast_THM10.mat
 blast_reduced_THM10.mat
 
 # Archivos de modelo
 *.xml
+# Archivos temporales de matlab
+*.asv
+
+# Carpeta de workspaces 
+workspaces/
