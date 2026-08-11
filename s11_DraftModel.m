@@ -1,5 +1,4 @@
 %% Para hacer el blast entre .fasta de interes y .faa .mat de organismos
-%% plantilla
 
 initCobraToolbox();
 
@@ -7,7 +6,9 @@ folderPath = pwd;
 fileList = dir(folderPath);
 fileNames = {fileList.name};
 %Definir archivo(s).faa 
-cleanFiles = {'iAP1008_protein_clean_1.faa'};
+fileList = dir(fullfile(folderPath, '*_protein_clean_1.faa'));
+cleanFiles = {fileList.name}'; % Lista de todos los archivos encontrados
+
 %Definir .fasta de organismo de interes
 list2 = {'THM10.fasta'};
 
@@ -71,9 +72,10 @@ lenHits = cellfun(@length, HitsInfo2);
 [sortVar, idxSort] = sort(lenHits, 'descend');
 listOrg = cleanFiles(idxSort);
 
-% ==================== Creación de archivos .fasta a partir de modelos metabólicos (.mat) de cleanFiles2 =======
+%save(fullfile('workspaces', 'blast_THM10.mat'));
 
-cleanFiles2 = {'iAP1008.mat'};
+% ==================== Creación de archivos .fasta a partir de modelos metabólicos (.mat) de cleanFiles2 =======
+cleanFiles2 = strrep(cleanFiles, '_protein_clean_1.faa', '.mat');
 
 for i = 1 : length(cleanFiles2)
     model = load(cleanFiles2{i,1});
@@ -90,7 +92,8 @@ end
 
 % ==================== Segundo blast con los nuevos fasta =============
 
-cleanFiles3 = {'iAP1008.fasta'};
+
+cleanFiles3 = strrep(cleanFiles2, '.mat', '.fasta');
 list2 = {'THM10.fasta'};
 
 
@@ -159,7 +162,8 @@ listOrg = cleanFiles3(idxSort);
 
 % ======== generacion de modelos =======
 
-cleanFiles2 = {'iAP1008.mat'};
+cleanFiles2 = strrep(cleanFiles, '_protein_clean_1.faa', '.mat');
+
 archivos_mat = cleanFiles2;   % es una celda
 
 for i = 1:length(archivos_mat)
@@ -233,10 +237,13 @@ for i = 1 : length(cleanFiles3)
     draftModels{i,1} = draftModel;
 end
 
-% Guardar todo
-save('DraftModelsiAP1008_THM10.mat')
+draftgetModelFromHomology = draftModels{5, 1};
 
-%===================================================
+
+% Guardar todo
+save(fullfile('workspaces', 'workspaceDraftModels_THM10.mat'));
+
+%==========================================================
 
 metsLength = cellfun(@(x) length(x.mets),draftModels,'UniformOutput',false);
 rxnsLength = cellfun(@(x) length(x.rxns),draftModels,'UniformOutput',false);
@@ -244,13 +251,13 @@ genesLength = cellfun(@(x) length(x.genes),draftModels,'UniformOutput',false);
 
 statsModels = horzcat(metsLength,rxnsLength,genesLength);
 
-
+%de draftModels selecionar el modelo plantilla (iAP1008)
+% Cambiar variable innerBlast3 por la correspondiente (En este caso corresponde a la 5a)
 
 iAP1008.description=strcat(iAP1008.description,'.fasta');
-iAP1008.id = 'iAP1008.fasta'; 
 iAP1008 = generateRules(iAP1008);
 optimizeCbModel(iAP1008)
-modelTemp1 = reconstructionOpt2(iAP1008,list2{1,1},innerBlast3{1,1},adjParam1(1,1),adjParam1(1,2),adjParam1(1,3));
+modelTemp1 = reconstructionOpt2(iAP1008,list2{1,1},innerBlast3{1,5},adjParam1(1,1),adjParam1(1,2),adjParam1(1,3));
 checkGrowth1 = optimizeCbModel(modelTemp1);
 [a,b] = exchangeSingleModel(modelTemp1);
 [a1,b1] = exchangeSingleModel(iAP1008);
@@ -258,8 +265,8 @@ diffRxns = setdiff(iAP1008.rxns,modelTemp1.rxns);
 diffRxns(:,2) = iAP1008.grRules(findRxnIDs(iAP1008,diffRxns(:,1)));
 
 
-
-blastKleb = HitsInfo2{1,1};
+%Cambiar Hitsinfo2 por la correspondiente (5a)
+blastKleb = HitsInfo2{5,1};
 
 modelTemp2 = iAP1008;
 modelTemp2 = changeRxnBounds(modelTemp2,'EX_glc__D_e',-5,'l');
@@ -281,7 +288,17 @@ genesKPN = modelTemp2.genes(find(contains(modelTemp2.genes,'APT')));
 
 checkGPR = modelTemp2.grRules(find(contains(modelTemp2.grRules,'APT')));
 
-rxnsDel = {'ALLULPE';'DAPAL';'RBK_Dr';'Rbtt2';'TDPDRE';'TDPDRR';'XYLt2pp'};
+%Poner rxns para eliminar las cuales dentro de checkGPR solo tengas genes
+%de iAP1008 es decir que sean genes APT_X
+
+%Para identificar que rxns poner en rxnsDel
+idxKPN = find(contains(modelTemp2.grRules, 'APT'));
+for i = 1:length(checkGPR)
+    idxGlobal = idxKPN(i);
+    fprintf('%d. Indice: %d | Reaccion: %s | GPR: %s\n', i, idxGlobal, modelTemp2.rxns{idxGlobal}, checkGPR{i});
+end
+
+rxnsDel = {'HDAO10x';'GCLDH'};
 
 modelTemp3 = removeRxns(modelTemp2,rxnsDel);
 for i=1:length(modelTemp3.mets)
@@ -302,4 +319,46 @@ end
  modelTemp3.csense=char(modelTemp3.csense);
 [a2,b2] = exchangeSingleModel(modelTemp2);
 
-fluxTemp = optimizeCbModel(modelTemp2,'max','one',0);
+%save(fullfile('workspaces', 'workspaceCONTROL.mat'))
+
+%fluxTemp = optimizeCbModel(modelTemp2,'max','one',0);
+
+
+%let's generate the possible set of reactions to add.
+%modelTemp2 will be the initial draft model
+
+draftModels2 = draftModels;          
+draftModels2(5) = [];
+
+initRxns = modelTemp2.rxns;
+
+for i = 1 : length(draftModels2)
+    if i == 1
+        [rxnsDif,idxDif] = setdiff(draftModels2{i,1}.rxns,initRxns);
+        rxnsDif(:,2) = draftModels2{i,1}.rxnNames(findRxnIDs(draftModels2{i,1},rxnsDif));
+        rxnsDif(:,3) = printRxnFormula(draftModels2{i,1},rxnsDif(:,1));
+        rxnsDif(:,4) = draftModels2{i,1}.grRules(findRxnIDs(draftModels2{i,1},rxnsDif(:,1)));
+        rxnsDif(:,5) = {cleanFiles2{i,1}};
+        poolRxns = rxnsDif;
+    
+    else
+        extraRxns = setdiff(draftModels2{i,1}.rxns,poolRxns(:,1));
+        [rxnsDif,idxDif] = setdiff(extraRxns(:,1),initRxns);
+        rxnsDif(:,2) = draftModels2{i,1}.rxnNames(findRxnIDs(draftModels2{i,1},rxnsDif));
+        rxnsDif(:,3) = printRxnFormula(draftModels2{i,1},rxnsDif(:,1));
+        rxnsDif(:,4) = draftModels2{i,1}.grRules(findRxnIDs(draftModels2{i,1},rxnsDif(:,1)));
+        rxnsDif(:,5) = {cleanFiles2{i,1}};
+        poolRxns = vertcat(poolRxns,rxnsDif);
+    
+    end
+    
+end
+
+writecell(poolRxns,'poolRxnsCuration.csv')
+
+protData = fastaread('THM10.fasta');
+
+protHeader = length({protData.Header}.');
+
+
+save(fullfile('workspaces', 'workspaceCONTROL2.mat'))

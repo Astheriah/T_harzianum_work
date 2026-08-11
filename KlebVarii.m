@@ -226,7 +226,7 @@ for i = 1 : length(cleanFiles3)
     model.id=strcat(model.description,'.fasta');
     models= {model};
     blastStructureCode = innerBlast3{1,i};
-    draftModel=getModelFromHomology(models,blastStructureCode,getModelFor,preferredOrder,strictness,onlyGenesInModels,adjParam1(1,1),adjParam1(1,2),adjParam1(1,3),mapNewGenesToOld);
+    draftModel=getModelFromHomology(models,blastStructureCode,getModeerblast3lFor,preferredOrder,strictness,onlyGenesInModels,adjParam1(1,1),adjParam1(1,2),adjParam1(1,3),mapNewGenesToOld);
     draftModels{i,1} = draftModel;
 end
 
