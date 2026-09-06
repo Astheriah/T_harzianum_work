@@ -279,6 +279,8 @@ for i = 1:size(blastKleb, 1)
 end
 
 
+%save(fullfile('workspaces', 'workspaceCONTROL1.mat'));
+
 load("iAP1008.mat")
 modelTemp2 = iAP1008;
 modelTemp2 = changeRxnBounds(modelTemp2,'EX_glc__D_e',-5,'l');
@@ -314,11 +316,6 @@ modelTemp2 = buildRxnGeneMat(modelTemp2);
 modelTemp2 = generateRules(modelTemp2);
 modelTemp2 = removeUnusedGenes(modelTemp2);
 
-genesModelTemp2 = table(modelTemp2.genes, 'VariableNames', {'GeneID'});
-genesModelTemp2(1:176, :) = [];
-proteinIDs = regexp(genesModelTemp2.GeneID, '(?<=_)\d+', 'match', 'once');
-genesModelTemp2.ProteinID = proteinIDs;
-writetable(genesModelTemp2, 'genesModelTemp2.csv');
 
 
 %let's find the reactions with APT genes
@@ -336,57 +333,8 @@ for i = 1:length(checkGPR)
     fprintf('%d. Indice: %d | Reaccion: %s | GPR: %s\n', i, idxGlobal, modelTemp2.rxns{idxGlobal}, checkGPR{i});
 end
 
-%CORRER S12_API y obtener ProteinID_EC_info.csv
-
-genesTemp2 = table(modelTemp2.genes, 'VariableNames', {'GeneID'});
-
-genesTemp2Info = readtable('ProteinID_EC_info.csv');
-
-genesTemp2.ProteinID = regexp(genesTemp2.GeneID, '\d+$', 'match', 'once');
-
-if isnumeric(genesTemp2Info.ProteinID)
-    genesTemp2Info.ProteinID = string(genesTemp2Info.ProteinID);
-end
-genesTemp2Info.ProteinID = regexp(genesTemp2Info.ProteinID, '\d+$', 'match', 'once');
-
-colsExtra = setdiff(genesTemp2Info.Properties.VariableNames, 'ProteinID');
-
-for c = 1:numel(colsExtra)
-    col = colsExtra{c};
-    if isnumeric(genesTemp2Info.(col))
-        genesTemp2.(col) = NaN(height(genesTemp2), 1);
-    else
-        genesTemp2.(col) = repmat({''}, height(genesTemp2), 1);
-    end
-end
-
-[~, idx] = ismember(genesTemp2.ProteinID, genesTemp2Info.ProteinID);
-for c = 1:numel(colsExtra)
-    col = colsExtra{c};
-    mask = idx > 0;
-    genesTemp2.(col)(mask) = genesTemp2Info.(col)(idx(mask));
-end
-
 
 save(fullfile('workspaces', 'workspaceCONTROL.mat'))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 rxnsDel = {'HDAO10x';'GCLDH'};
 
@@ -409,7 +357,7 @@ end
  modelTemp3.csense=char(modelTemp3.csense);
 [a2,b2] = exchangeSingleModel(modelTemp2);
 
-%save(fullfile('workspaces', 'workspaceCONTROL3.mat'))
+%save(fullfile('workspaces', 'workspaceCONTROL.mat'))
 
 %fluxTemp = optimizeCbModel(modelTemp2,'max','one',0);
 
@@ -451,5 +399,60 @@ protData = fastaread('THM10.fasta');
 protHeader = length({protData.Header}.');
 
 
-save(fullfile('workspaces', 'workspaceCONTROL4.mat'))
+save(fullfile('workspaces', 'workspaceCONTROL2.mat'))
 
+
+% =========================================================================
+% Extraer genes y comparar con HitsTables{1,5}
+% =========================================================================
+
+% 1. Listas de genes (cell arrays)
+genesModelTemp2 = modelTemp2.genes;           % genes del modelo modificado
+genesDraft = draftgetModelFromHomology.genes; % genes del draft obtenido
+
+% 2. Tabla de hits del quinto organismo (índice 5)
+hitsTable = HitsTables{1,5};  % columnas: 'template ID', 'model ID', 'evalue', 'identity', 'length', 'bitscore', 'ppos'
+
+% Verificar que hitsTable no esté vacía
+if isempty(hitsTable)
+    error('HitsTables{1,5} está vacía. Verifica que el BLAST haya producido resultados.');
+end
+
+% 3. Crear tablas con los genes (opcional, para revisión)
+tableModelTemp2Genes = table(genesModelTemp2, 'VariableNames', {'Gene'});
+tableDraftGenes = table(genesDraft, 'VariableNames', {'Gene'});
+
+% 4. Buscar coincidencias exactas en la columna 'template ID'
+%    Para modelTemp2
+idxMatchModelTemp2 = ismember(hitsTable.('template ID'), genesModelTemp2);
+matchesModelTemp2 = hitsTable(idxMatchModelTemp2, :);
+
+%    Para draftgetModelFromHomology
+idxMatchDraft = ismember(hitsTable.('template ID'), genesDraft);
+matchesDraft = hitsTable(idxMatchDraft, :);
+
+
+% Convertir blastKleb a tabla limpia y guardarla como blastKleb2
+blastKleb = HitsInfo2{5,1};  % variable original
+
+% Desempaquetar celdas anidadas (columnas 1 y 2)
+blastKleb(:,1) = cellfun(@(x) x{1}, blastKleb(:,1), 'UniformOutput', false);
+blastKleb(:,2) = cellfun(@(x) x{1}, blastKleb(:,2), 'UniformOutput', false);
+
+% Crear tabla con nombres de columna
+blastKleb2 = cell2table(blastKleb, ...
+    'VariableNames', {'template ID','model ID','evalue','identity','length','bitscore','ppos'});
+
+% 2. Extraer la columna 'template ID' de blastKleb2 (es un cell array de strings)
+templateIDsFull = blastKleb2.('template ID');  % notación con paréntesis porque el nombre tiene espacio
+
+% 3. Encontrar coincidencias para genesModelTemp2
+idxModelTemp2 = ismember(templateIDsFull, genesModelTemp2);
+matchesModelTemp2Full = blastKleb2(idxModelTemp2, :);
+
+% 4. Encontrar coincidencias para genesDraft
+idxDraft = ismember(templateIDsFull, genesDraft);
+matchesDraftFull = blastKleb2(idxDraft, :);
+
+writetable(matchesDraft, 'matchesDraft.csv');
+writetable(matchesModelTemp2, 'matchesModelTemp2.csv');

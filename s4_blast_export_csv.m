@@ -4,7 +4,7 @@
 
 % Intenta cargar y exportar el primer archivo
 try
-    load('blast_THM10.mat');
+    load(fullfile('workspaces','blast_THM10.mat'));
     fprintf('Cargado blast_THM10.mat correctamente.\n');
     
     % Exportar cada tabla de hits a CSV (en el directorio actual)
@@ -28,7 +28,7 @@ end
 
 % Intenta cargar y exportar el segundo archivo
 try
-    load('blast_reduced_THM10.mat');
+    load(fullfile('workspaces','blast_reduced_THM10.mat'));
     fprintf('Cargado blast_reduced_THM10.mat correctamente.\n');
     
     outputDir = 'hits_reduced';

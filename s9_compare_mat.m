@@ -1,6 +1,6 @@
 % Comparar NOMBRES de campos de modelos metabólicos y porcentaje de datos
 baseFileName = 'iML1515.mat';
-baseFilePath = fullfile('compare_model', baseFileName);
+baseFilePath = fullfile('workspaces', baseFileName);
 
 % Lista de excepciones: archivos .mat que NO quieres analizar como "otros"
 exceptions = {'blast_reduced_THM10.mat'};  
