@@ -6,3 +6,11 @@ blast_reduced_THM10.mat
 
 # Archivos de modelo
 *.xml
+# Archivos temporales de matlab
+*.asv
+
+# Carpeta de workspaces 
+workspaces/
+
+# Carpeta de resultados de s12_API
+API/
