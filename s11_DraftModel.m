@@ -456,3 +456,10 @@ matchesDraftFull = blastKleb2(idxDraft, :);
 
 writetable(matchesDraft, 'matchesDraft.csv');
 writetable(matchesModelTemp2, 'matchesModelTemp2.csv');
+
+if ~exist('results', 'dir')
+    mkdir('results');
+end
+model = modelTemp2;
+save(fullfile('results','THM10_draftmodel_v1.mat'), 'model');
+

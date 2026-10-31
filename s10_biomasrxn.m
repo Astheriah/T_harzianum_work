@@ -1,10 +1,10 @@
-initCobraToolbox()
+% initCobraToolbox()
 
 %=============================== t_reesei ========================================%
 % scerbiomasspseudoreaction = 4006
 % treebiomasspseudoreaction = 4007
 
-load("t_reesei.mat")
+load("t_reesei.mat");
 [x, y] = findMetsFromRxns(t_reesei, t_reesei.rxns(4007))
 
 x_flat = x;
